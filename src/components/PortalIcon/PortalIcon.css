@@ -1,0 +1,17 @@
+.profile-icon {
+    height: 50px;
+    border-radius: 50px;
+}
+
+.portal-menu {
+    
+    top: 50px !important;
+    left: -105px !important;
+    will-change: transform !important;
+    transform: none !important;
+}
+
+nav li a:hover {
+    text-decoration: none;
+    color: black;
+}

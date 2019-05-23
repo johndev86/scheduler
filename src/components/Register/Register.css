@@ -1,0 +1,9 @@
+.register_form {
+    padding: 1em;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+

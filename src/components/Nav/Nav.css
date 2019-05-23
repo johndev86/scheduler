@@ -1,0 +1,17 @@
+.nav-content {
+    display: flex;
+}
+
+.nav-last {
+    margin-left: auto;
+}
+
+nav li {
+    list-style: none;
+    margin: 10px;
+}
+
+nav li a {
+    text-decoration: none;
+    color: black;
+}
