@@ -58,7 +58,7 @@ class Profile extends React.Component {
     render() {
         return (
 
-            <div className="profile_modal">
+            <div className="profile-modal">
                 
                 <Form onSubmit={this.onSaveProfile}>
                     <div className="modal-close" onClick={this.props.hideProfile}>&times;</div>

@@ -16,12 +16,14 @@ const initialState = {
   isProfileOpen: false,
   isSignedIn: false,
   user: {
+    id: -1,
     name: '',
     email: '',
     description: '',
     user_type: '',
     profile_img: ''
-  }
+  },
+  loading: true
 }
 
 class App extends React.Component {
@@ -29,6 +31,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = initialState;
+    
   }
 
   componentDidMount() {
@@ -42,24 +45,39 @@ class App extends React.Component {
         }
       })
       .then(resp => resp.json())
+      .then(resp => {
+        if (resp === 'unauthorized') {
+          return Promise.reject('invalid token');
+        } else {
+          return resp;
+        }
+      })
       .then(data => {
         if (data && data.user_id) {
           this.loadUser(data);
-          this.signIn();
         }
       })
+      .catch((e)=>{
+        window.sessionStorage.removeItem('token');
+        this.setState({loading: false});
+      })
+    } else {
+      this.setState({loading: false});
     }
   }
 
   loadUser = (user) => {
     this.setState({
       user: {
+        id: user.user_id,
         name: user.name,
         email: user.email,
         description: user.description,
         user_type: user.user_type,
         profile_img: user.profile_img
-      }
+      },
+      isSignedIn: true,
+      loading: false
     })
   }
 
@@ -71,34 +89,35 @@ class App extends React.Component {
     this.setState({isProfileOpen: false});
   }
 
-  signIn = () => {
-    this.setState({isSignedIn: true});
-  }
-
   signOut = () => {
     this.setState(initialState);
+    this.setState({loading: false});
     window.sessionStorage.removeItem('token');
   }
 
   render() {
-    const { isSignedIn, isProfileOpen, user } = this.state;
+    const { isSignedIn, isProfileOpen, user, loading } = this.state;
+    
     return (
       <Router>
       <div className="App">
         {isSignedIn && isProfileOpen && <Modal>
           <Profile loadUser={this.loadUser} user={user} hideProfile={this.hideProfile}></Profile>
         </Modal>}
-        <Nav showProfile={this.showProfile} isSignedIn={isSignedIn} signIn={this.signIn} 
+        <Nav showProfile={this.showProfile} loading={loading} isSignedIn={isSignedIn}
         signOut={this.signOut} loadUser={this.loadUser}/>
         
         <Route path="/" exact component={Home} />
         <Route path="/staff" component={Staff} />
         <Route path="/about" component={About} />
         <Route path="/signin" render={() => 
-          <Signin isSignedIn={isSignedIn} signIn={this.signIn} loadUser={this.loadUser} />
+          <Signin isSignedIn={isSignedIn} loadUser={this.loadUser} />
         } />
         <Route path="/register" component={Register}/>
-        <Route path="/schedule" component={Schedule}/>
+        {!loading &&
+        <Route path="/schedule" render={() => 
+          <Schedule isSignedIn={isSignedIn} loading={loading} user={user}/>
+        }/>}
       </div>
       </Router>
     );

@@ -1,0 +1,27 @@
+.calendar-box {
+    margin: 1em;
+    font-size: 14px !important;
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1000px;
+    padding-left: 10px;
+    padding-right: 10px;
+    height: calc(100vh - 100px);
+}
+
+.rbc-btn-group {
+    margin-bottom: 10px;
+}
+
+.cal-select {
+    max-width: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px;
+}
+
+.cal-select select {
+    margin-left: 10px;
+}

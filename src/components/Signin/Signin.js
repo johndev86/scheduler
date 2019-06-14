@@ -46,10 +46,8 @@ class Signin extends React.Component {
                 })
                 .then(response => response.json())
                 .then(user => {
-                    console.log(this.props);
-                    this.props.loadUser(user);
                     this.saveAuthTokenInSession(data.token);
-                    this.props.signIn();
+                    this.props.loadUser(user);
                 })
             }
         })
