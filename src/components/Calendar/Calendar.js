@@ -9,7 +9,28 @@ import './Calendar.css';
 const localizer = BigCalendar.momentLocalizer(moment);
 
 const eventPropGetter = (event) => {
-  return {className: event.pending ? "cal-pending " : "cal-confirmed "};
+  //style here to override "selected" date styling
+  let style;
+
+  if (event.masked) {
+    style = {
+      backgroundColor: "#b0b5b0",
+      color: "black"
+    }
+  } else {
+    style = event.pending ? 
+    {
+      backgroundColor: "#e5ff00",
+      color: "black"
+    }
+    :
+    {
+      backgroundColor: "#00ff22",
+      color: "black"
+    }
+  }
+
+  return {style: style};
 }
 
 const Calendar = ({events, showEventDialog, newEventDialog}) => (
@@ -19,7 +40,11 @@ const Calendar = ({events, showEventDialog, newEventDialog}) => (
       events={events}
       selectable={true}
       views={['month', 'day', 'agenda']}
-      onSelectEvent={(e)=>showEventDialog(e.id)}
+      onSelectEvent={(e)=>{
+        if (e.masked !== true) {
+          showEventDialog(e.id);
+        }
+      }}
       onSelectSlot={(slotInfo)=>newEventDialog(slotInfo.slots[0])}
       startAccessor="start"
       endAccessor="end"

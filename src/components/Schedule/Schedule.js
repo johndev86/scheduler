@@ -20,11 +20,12 @@ class Schedule extends React.Component {
             to: endDate.toDate(),
             schedule: [],
             error: '',
-            staff_list: [],
+            staffList: [],
             showEvent: false,
             eventId: 0,
             newDate: new Date(),
-            calendarId: this.props.user.id
+            calendarId: this.props.user.id,
+            staffName: ''
         };
     }
 
@@ -53,8 +54,17 @@ class Schedule extends React.Component {
     }
 
     handleCalendarChange = (event) => {
+        const value = Number(event.target.value);
+        const {id} = this.props.user;
 
-        this.setState({calendarId: event.target.value}, () => {
+        //get staff name of currently selected calendar
+        const nameFilter = this.state.staffList.filter((e) => {
+            return (e.user_id === value && value !== id);
+        });
+
+        const staffName = nameFilter.length > 0 ? nameFilter[0].name: ''
+        
+        this.setState({calendarId: value, staffName: staffName}, () => {
             this.getSchedule();
         });
     }
@@ -100,7 +110,11 @@ class Schedule extends React.Component {
             }
         })
         .then(data => {
-            this.setState({schedule: this.normalizeData(data.appointments)});
+            if (data === 'nothing scheduled') {
+                this.setState({schedule: [], error: 'No scheduled event'});
+            } else {
+                this.setState({schedule: this.normalizeData(data.appointments), error: ''});
+            }
         })
         .catch(err => {
             this.setState({error: err});
@@ -119,6 +133,7 @@ class Schedule extends React.Component {
                 end: new Date(e.time_to),
                 allDay: false,
                 note: e.note,
+                masked: e.masked,
                 resource: null
             };
         });
@@ -143,7 +158,7 @@ class Schedule extends React.Component {
             }
         })
         .then(data => {
-            this.setState({staff_list: data.staff});
+            this.setState({staffList: data.staff});
         })
         .catch(err => {
             this.setState({error: err});
@@ -154,7 +169,7 @@ class Schedule extends React.Component {
         const {id} = this.props.user;
 
         let options = [];
-        this.state.staff_list.forEach(e => {
+        this.state.staffList.forEach(e => {
             if (e.user_id !== id) {
                 options.push(<option key={e.user_id} value={e.user_id}>{e.name}'s Calendar</option>);
             }
@@ -169,11 +184,12 @@ class Schedule extends React.Component {
     }
 
     render() {
-        const {error, schedule, showEvent, newDate, eventId, calendarId} = this.state;
+        const {error, schedule, showEvent, newDate, eventId, calendarId, staffName} = this.state;
         const {isSignedIn, user} = this.props;
 
-        const userIds = [user.id];
-        if (user.id !== calendarId) {
+        const userIds = [Number(user.id)];
+        
+        if (userIds[0] !== calendarId) {
             userIds.push(calendarId);
         }
         
@@ -187,7 +203,7 @@ class Schedule extends React.Component {
         const calendar = 
                     <div>
                         {showEvent && <Modal>
-                            <Event hideEventDialog={this.hideEventDialog} getSchedule={this.getSchedule} userIds={userIds} setError={this.setError} newDate={newDate} event={schedule[eventId]}/>
+                            <Event hideEventDialog={this.hideEventDialog} userType={this.props.user.user_type} getSchedule={this.getSchedule} staffName={staffName} userIds={userIds} setError={this.setError} newDate={newDate} event={schedule[eventId]}/>
                         </Modal>}
                         
                         <div className="cal-select">

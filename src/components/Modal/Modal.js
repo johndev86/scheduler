@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import './Modal.css'
 
 const modalRoot = document.getElementById('modal-root');
+const body = document.getElementsByTagName('body');
 
 class Modal extends React.Component {
     constructor(props) {
@@ -12,10 +13,12 @@ class Modal extends React.Component {
 
     componentDidMount() {
         modalRoot.appendChild(this.el);
+        body[0].style.overflow = "hidden";
     }
 
     componentWillUnmount() {
         modalRoot.removeChild(this.el);
+        body[0].style.overflow = "scroll";
     }
 
     render() {

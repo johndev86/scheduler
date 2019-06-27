@@ -1,4 +1,6 @@
 #modal-root {
-    position: relative;
+    position: fixed;
     z-index: 999;
+    
 }
+

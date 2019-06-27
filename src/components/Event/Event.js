@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Form, FormGroup, Label, Input, Col } from 'reactstrap';
+import { Button, Form, FormGroup, Label, Input, Col, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import DateTime from 'react-datetime';
 import './Event.css';
 
@@ -14,7 +14,8 @@ class Event extends React.Component {
             start: new Date(),
             end: new Date(),
             pending: true,
-            note: ''
+            note: '',
+            modal: false
         }
     }
 
@@ -91,24 +92,57 @@ class Event extends React.Component {
         .then(resp => {
             this.props.hideEventDialog();
             if (resp !== 'success') {
-                this.props.setError('Failed to create/update event: ', resp);
+                this.props.setError('Failed to create/update event: ' + resp.error);
             } else {
                 this.props.getSchedule();
             }
         });
     }
 
+    onDeleteEvent = () => {
+        fetch(process.env.REACT_APP_API_URL+'/deleteappointment', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': window.sessionStorage.getItem('token')
+            },
+            body: JSON.stringify({appointment_id: this.state.id})
+        })
+        .then(response => response.json())
+        .then(resp => {
+            this.toggleModal();
+            this.props.hideEventDialog();
+            
+            if (resp !== 'success') {
+                this.props.setError('Failed to delete event: ' + resp.error);
+            } else {
+                this.props.getSchedule();
+            }
+        });
+    }
+
+    toggleModal = () => {
+        this.setState(prevState => ({
+            modal: !prevState.modal
+        }));
+    }
+    
+
     render() {
         
         const {title, type, start, end, note, pending} = this.state;
-        console.log('from', start, 'to', end);
+        
+        const disableConfirm = this.props.userType === 'client';
+
         const statusColor = pending ? "event-pending" : "event-confirmed";
+
+        const headEnd = this.props.staffName.length > 0 ? "with " + this.props.staffName : ""
 
         return (
             <div className={"event-modal " + statusColor}>
                 {this.props.event ? 
-                <h3>Edit Event - {title}</h3> :
-                <h3>New Event</h3>
+                <div className="modal-title">Edit Event {headEnd}</div> :
+                <div className="modal-title">New Event {headEnd}</div>
                 }
                 
                 <Form onSubmit={this.onSaveEvent}>
@@ -149,21 +183,31 @@ class Event extends React.Component {
                         <Col sm={10} className="radio-group">
                             <FormGroup check>
                             <Label check>
-                                <Input type="radio" name="pending" checked={pending} onChange={() => this.handlePendingChange(true)}/>{' '}
+                                <Input type="radio" disabled={disableConfirm} name="pending" checked={pending} onChange={() => this.handlePendingChange(true)}/>{' '}
                                 Pending
                             </Label>
                             </FormGroup>
                             <FormGroup check>
                             <Label check>
-                                <Input type="radio" name="pending" checked={!pending} onChange={() => this.handlePendingChange(false)}/>{' '}
+                                <Input type="radio" disabled={disableConfirm} name="pending" checked={!pending} onChange={() => this.handlePendingChange(false)}/>{' '}
                                 Confirmed
                             </Label>
                             </FormGroup>
                         </Col>
                     </FormGroup>
+                    <Modal isOpen={this.state.modal} toggle={this.toggleModal} className={this.props.className}>
+                        <ModalHeader toggle={this.toggleModal}>Delete Event</ModalHeader>
+                        <ModalBody>
+                            Confirm delete event: {this.state.title}
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button color="danger" onClick={this.onDeleteEvent}>Confirm</Button>{' '}
+                            <Button color="secondary" onClick={this.toggleModal}>Cancel</Button>
+                        </ModalFooter>
+                    </Modal>
                     <Button>Submit</Button>{' '}
                     <Button onClick={this.props.hideEventDialog}>Cancel</Button>{' '}
-                    <Button color="Danger">Delete</Button>
+                    <Button color="danger" onClick={this.toggleModal}>Delete</Button>
                 </Form>
             </div>
         )
